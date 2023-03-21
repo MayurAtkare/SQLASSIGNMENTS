@@ -863,3 +863,69 @@ from prices p inner join units_sold u on p.product_id=u.product_id
 where u.purchase_date between p.start_date and p.end_date
 group by p.product_id;
 
+CREATE TABLE activity
+(
+  player_id INT,
+  device_id INT,
+  event_date DATE,
+  games_played INT,
+  CONSTRAINT pk_activity PRIMARY KEY(player_id, event_date)
+);
+
+INSERT INTO activity VALUES(1, 2, '2016-03-01', 5);
+INSERT INTO activity VALUES(1, 2, '2016-05-02', 6);
+INSERT INTO activity VALUES(2, 3, '2017-06-25', 1);
+INSERT INTO activity VALUES(3, 1, '2016-03-02', 0);
+INSERT INTO activity VALUES(3, 4, '2018-07-03', 5);
+select * from activity;
+
+#Q.24.Write an SQL query to report the first login date for each player.
+select player_id,min(event_date) as first_login from activity group by player_id;
+
+#Q.25.Write an SQL query to report the device that is first logged in for each player.
+select player_id,min(device_id) as device_id from activity group by player_id;
+
+CREATE TABLE products
+(
+  product_id INT,
+  product_name VARCHAR(30),
+  product_category VARCHAR(30),
+  CONSTRAINT pk_products PRIMARY KEY(product_id)
+);
+
+CREATE TABLE orders
+(
+  product_id INT,
+  order_date DATE,
+  unit INT,
+  CONSTRAINT fk_product FOREIGN KEY (product_id)
+    REFERENCES products(product_id) 
+);
+
+INSERT INTO products VALUES(1, 'Leetcode Solutions', 'Book');
+INSERT INTO products VALUES(2, 'Jewels of Stringology', 'Book');
+INSERT INTO products VALUES(3, 'HP', 'Laptop');
+INSERT INTO products VALUES(4, 'Lenovo', 'Laptop');
+INSERT INTO products VALUES(5, 'Leetcode Kit', 'T-shirt');
+
+INSERT INTO orders VALUES(1, '2020-02-05', 60);
+INSERT INTO orders VALUES(1, '2020-02-10', 70);
+INSERT INTO orders VALUES(2, '2020-01-18', 30);
+INSERT INTO orders VALUES(2, '2020-02-11' ,80);
+INSERT INTO orders VALUES(3, '2020-02-17', 2);
+INSERT INTO orders VALUES(3, '2020-02-24', 3);
+INSERT INTO orders VALUES(4, '2020-03-01', 20);
+INSERT INTO orders VALUES(4, '2020-03-04', 30);
+INSERT INTO orders VALUES(4, '2020-03-04', 60);
+INSERT INTO orders VALUES(5, '2020-02-25', 50);
+INSERT INTO orders VALUES(5, '2020-02-27', 50);
+INSERT INTO orders VALUES(5, '2020-03-01', 50);
+select * from products;
+select * from orders;
+
+#Q26:Write an SQL query to get the names of products that have at least 100 units ordered in February 2020 and their amount.
+select p.product_name,sum(o.unit) as unit from orders o  inner join products p on p.product_id=o.product_id
+where left(o.order_date,7)='2020-02'
+group by o.product_id
+having sum(o.unit)>=100;
+
