@@ -657,6 +657,8 @@ select distinct city from station where left(city,1) not in ('a','e','i','o','u'
 #Q16. Query the list of CITY names from STATION that do not start with vowels and do not end with vowels. Your result cannot contain duplicates.
 select distinct city from station where left(city,1) not in ('a','e','i','o','u') and right(city,1) not in ('a','e','i','o','u');
 
+Q.17.#Write an SQL query that reports the products that were only sold in the first quarter of 2019. That is,between 2019-01-01 and 2019-03-31 inclusive.
+#Return the result table in any order:
 CREATE TABLE product
 (
   product_id INT,
@@ -687,14 +689,13 @@ INSERT INTO sales VALUES(1, 2, 2, '2019-02-17', 1, 800);
 INSERT INTO sales VALUES(2, 2, 3, '2019-06-02', 1, 800);
 INSERT INTO sales VALUES(3, 3, 4, '2019-05-13', 2, 2800);
 
-Q.17.#Write an SQL query that reports the products that were only sold in the first quarter of 2019. That is,between 2019-01-01 and 2019-03-31 inclusive.
-#Return the result table in any order:
 select * from product;
 select * from sales;
 select  p.product_id,p.product_name from product p left join sales s on p.product_id=s.product_id
 GROUP BY p.product_id,p.product_name
 HAVING MIN(s.sale_date) >= '2019-01-01' AND MAX(s.sale_date) <= '2019-03-31';
 
+#Q18.Write an SQL query to find all the authors that viewed at least one of their own articles.Return the result table sorted by id in ascending order.
 CREATE TABLE views
 (
   article_id INT,
@@ -711,11 +712,9 @@ INSERT INTO views VALUES(4, 7, 1, '2019-07-22');
 INSERT INTO views VALUES(3, 4, 4, '2019-07-21');
 INSERT INTO views VALUES(3, 4, 4, '2019-07-21');
 select * from views;
-
-#Q18.Write an SQL query to find all the authors that viewed at least one of their own articles.Return the result table sorted by id in ascending order.
 select  distinct author_id as ID from views where author_id=viewer_id order by author_id;
 
-
+#Q19.Write an SQL query to find the percentage of immediate orders in the table, rounded to 2 decimal places.
 CREATE TABLE delivery
 (
   delivery_id INT,
@@ -730,12 +729,14 @@ INSERT INTO delivery VALUES(3, 1, '2019-08-11', '2019-08-11');
 INSERT INTO delivery VALUES(4, 3, '2019-08-24', '2019-08-26');
 INSERT INTO delivery VALUES(5, 4, '2019-08-21', '2019-08-22');
 INSERT INTO delivery VALUES(6, 2, '2019-08-11', '2019-08-13');
-
-#Q19.Write an SQL query to find the percentage of immediate orders in the table, rounded to 2 decimal places.
 select * from delivery;
-select round(sum(case when order_date=customer_pref_delivery_date then 1 else 0 end)*100/count(*),2) as immediate_percentage
+select round(sum(case when order_date=customer_pref_delivery_date then 1 else 0 end)*100/count(*),2) 
+as immediate_percentage
 from delivery;
 
+
+#Q20:Write an SQL query to find the ctr of each Ad. Round ctr to two decimal points.Return the result table ordered by ctr in descending
+#order and by ad_id in ascending order in case of a tie:
 CREATE TABLE ads
 (
   ad_id INT,
@@ -756,9 +757,6 @@ INSERT INTO ads VALUES(2, 11, 'Viewed');
 INSERT INTO ads VALUES(1, 2, 'Clicked');
 select * from ads;
 
-#Q20:Write an SQL query to find the ctr of each Ad. Round ctr to two decimal points.Return the result table ordered by ctr in descending
-#order and by ad_id in ascending order in case of a tie:
-
 with ad_stat as
 (select ad_id,count(case when action='clicked' then user_id end) as AD_totalclicks,
 			 count(case when action='viewed' then user_id end) as AD_totalviews,
@@ -769,7 +767,9 @@ select ad_id, case when AD_totalclicks + AD_totalviews =0 then 0
               else round(AD_totalclicks*100/(AD_totalclicks + AD_totalviews),2) end as ctr from ad_stat
              group by ad_id 
              order by ctr desc,ad_id;
-	     
+
+
+#Q.21.Write an SQL query to find the team size of each of the employees
 CREATE TABLE employee
 (
   employee_id INT,
@@ -783,13 +783,17 @@ INSERT INTO employee VALUES(3,8);
 INSERT INTO employee VALUES(4,7);
 INSERT INTO employee VALUES(5,9);
 INSERT INTO employee VALUES(6,9);
-
-#Q.21.Write an SQL query to find the team size of each of the employees
 select * from employee;
 select employee_id,count(employee_id) over(partition by team_id) as time_size from employee order by employee_id;
                                             or
 select employee_id,(select count(team_id) from employee where e.team_id=team_id) as team_size from employee e;
 
+
+#Q22.Write an SQL query to find the type of weather in each country for November 2019.
+#The type of weather is:
+#● Cold if the average weather_state is less than or equal 15,
+#● Hot if the average weather_state is greater than or equal to 25, and
+#● Warm otherwise
 CREATE TABLE weather
 (
   country_id INT,
@@ -823,11 +827,6 @@ INSERT INTO weather VALUES(8, 31, '2019-11-25');
 INSERT INTO weather VALUES(9, 7, '2019-10-23');
 INSERT INTO weather VALUES(9, 3, '2019-12-23');
 
-#Q22.Write an SQL query to find the type of weather in each country for November 2019.
-#The type of weather is:
-#● Cold if the average weather_state is less than or equal 15,
-#● Hot if the average weather_state is greater than or equal to 25, and
-#● Warm otherwise
 select * from countries;
 select * from weather;
 
@@ -837,6 +836,8 @@ from weather w inner join countries c on w.country_id=c.country_id
 WHERE w.day BETWEEN '2019-11-01' AND '2019-11-30'
 group by w.country_id;
 
+
+#Q.23.Write an SQL query to find the average selling price for each product. average_price should be rounded to 2 decimal places.
 CREATE TABLE units_sold
 (
   product_id INT,
@@ -856,13 +857,13 @@ INSERT INTO units_sold VALUES(2, '2019-03-22', 30);
 select * from prices;
 select * from units_sold;
 
-#Q.23.Write an SQL query to find the average selling price for each product. average_price should be rounded to 2 decimal places.
-
 select p.product_id,round(sum(p.price*u.units)/sum(u.units),2)as avg_price
 from prices p inner join units_sold u on p.product_id=u.product_id
 where u.purchase_date between p.start_date and p.end_date
 group by p.product_id;
 
+
+#Q.24.Write an SQL query to report the first login date for each player.
 CREATE TABLE activity
 (
   player_id INT,
@@ -878,12 +879,13 @@ INSERT INTO activity VALUES(2, 3, '2017-06-25', 1);
 INSERT INTO activity VALUES(3, 1, '2016-03-02', 0);
 INSERT INTO activity VALUES(3, 4, '2018-07-03', 5);
 select * from activity;
-
-#Q.24.Write an SQL query to report the first login date for each player.
 select player_id,min(event_date) as first_login from activity group by player_id;
 
 #Q.25.Write an SQL query to report the device that is first logged in for each player.
 select player_id,min(device_id) as device_id from activity group by player_id;
+
+
+#Q26:Write an SQL query to get the names of products that have at least 100 units ordered in February 2020 and their amount.
 
 CREATE TABLE products
 (
@@ -922,10 +924,248 @@ INSERT INTO orders VALUES(5, '2020-02-27', 50);
 INSERT INTO orders VALUES(5, '2020-03-01', 50);
 select * from products;
 select * from orders;
-
-#Q26:Write an SQL query to get the names of products that have at least 100 units ordered in February 2020 and their amount.
 select p.product_name,sum(o.unit) as unit from orders o  inner join products p on p.product_id=o.product_id
 where left(o.order_date,7)='2020-02'
 group by o.product_id
 having sum(o.unit)>=100;
+
+#Q27:Write an SQL query to find the users who have valid emails.A valid e-mail has a prefix name and a domain where:● The prefix name is a string that may contain 
+#letters (upper or lower case), digits, underscore '_', period '.', and/or dash '-'. The prefix name must start with a letter.● The domain is '@leetcode.com'.
+
+CREATE TABLE users
+(
+  user_id INT,
+  name VARCHAR(30),
+  mail VARCHAR(50),
+  CONSTRAINT pk_users PRIMARY KEY(user_id)
+);
+
+
+INSERT INTO users VALUES(1, 'Winston', 'winston@leetcode.com');
+INSERT INTO users VALUES(2, 'Jonathan', 'jonathanisgreat');
+INSERT INTO users VALUES(3, 'Annabelle', 'bella-@leetcode.com');
+INSERT INTO users VALUES(4, 'Sally', 'sally.come@leetcode.com');
+INSERT INTO users VALUES(5, 'Marwan', 'quarz#2020@le etcode.com');
+INSERT INTO users VALUES(6, 'David', 'david69@gmail.com');
+INSERT INTO users VALUES(7, 'Shapiro','.shapo@leetco de.com');
+
+SELECT user_id,name,mail FROM users WHERE REGEXP_LIKE(mail, '^[a-zA-Z][a-zA-Z0-9\_\.\-]*@leetcode.com');
+
+#Q.28.Write an SQL query to report the customer_id and customer_name of customers who have spent atleast $100 in each month of 
+#June and July 2020.
+
+CREATE TABLE customers
+(
+  customer_id INT,
+  name VARCHAR(30),
+  country VARCHAR(50),
+  CONSTRAINT pk_customers PRIMARY KEY(customer_id)
+);
+
+CREATE TABLE products
+(
+  product_id INT,
+  name VARCHAR(30),
+  price VARCHAR(50),
+  CONSTRAINT pk_products PRIMARY KEY(product_id)
+);
+
+CREATE TABLE orders
+(
+  order_id INT,
+  customer_id INT,
+  product_id INT,
+  order_date DATE,
+  quantity INT,
+  CONSTRAINT pk_orders PRIMARY KEY(order_id)
+);
+
+
+INSERT INTO customers VALUES(1, 'Winston', 'USA');
+INSERT INTO customers VALUES(2, 'Jonathan', 'Peru');
+INSERT INTO customers VALUES(3, 'Moustafa', 'Egypt');
+
+INSERT INTO products VALUES(10, 'LC Phone', 300);
+INSERT INTO products VALUES(20, 'LC T-Shirt', 10);
+INSERT INTO products VALUES(30, 'LC Book', 45);
+INSERT INTO products VALUES(40, 'LC Keychain', 2);
+
+
+INSERT INTO orders VALUES(1, 1, 10, '2020-06-10', 1);
+INSERT INTO orders VALUES(2, 1, 20, '2020-07-01', 1);
+INSERT INTO orders VALUES(3, 1, 30, '2020-07-08', 2);
+INSERT INTO orders VALUES(4, 2, 10, '2020-06-15', 2);
+INSERT INTO orders VALUES(5, 2, 40, '2020-07-01', 10);
+INSERT INTO orders VALUES(6, 3, 20, '2020-06-24', 2);
+INSERT INTO orders VALUES(7, 3, 30, '2020-06-25', 2);
+INSERT INTO orders VALUES(9, 3, 30, '2020-05-08', 3);
+
+select c.customer_id,c.name from customers c 
+join orders o on c.customer_id=o.customer_id 
+join products p on p.product_id=o.product_id 
+group by c.customer_id 
+having
+sum(case when left(o.order_date,7)='2020-06' then o.quantity*p.price else 0 end)>=100 and
+sum(case when left(o.order_date,7)='2020-07' then o.quantity*p.price  else 0 end)>=100;
+
+CREATE TABLE tv_program
+(
+  program_date DATE,
+  content_id INT,
+  channel VARCHAR(30),
+  CONSTRAINT pk_tv_program PRIMARY KEY(program_date, content_id)
+);
+
+
+#Q.29.Write an SQL query to report the distinct titles of the kid-friendly movies streamed in June 2020:
+CREATE TABLE content
+(
+  content_id INT,
+  title VARCHAR(50),
+  kids_content ENUM('Y', 'N'),
+  content_type VARCHAR(20),
+  CONSTRAINT pk_content PRIMARY KEY(content_id)
+);
+
+INSERT INTO tv_program VALUES('2020-06-10 08:00', 1, 'LC-Channel');
+INSERT INTO tv_program VALUES('2020-05-11 12:00', 2, 'LC-Channel');
+INSERT INTO tv_program VALUES('2020-05-12 12:00', 3, 'LC-Channel');
+INSERT INTO tv_program VALUES('2020-05-13 14:00', 4, 'Disney Ch');
+INSERT INTO tv_program VALUES('2020-06-18 14:00', 4, 'Disney Ch');
+INSERT INTO tv_program VALUES('2020-07-15 16:00', 5, 'Disney Ch');
+select * from tv_program;
+INSERT INTO content VALUES(1, 'Leetcode Movie', 'N', 'Movies');
+INSERT INTO content VALUES(2, 'Alg. for Kids', 'Y', 'Series');
+INSERT INTO content VALUES(3, 'Database Sols', 'N', 'Series');
+INSERT INTO content VALUES(4, 'Aladdin', 'Y', 'Movies');
+INSERT INTO content VALUES(5, 'Cinderella', 'Y', 'Movies');
+
+select distinct c.title from tv_program t join content c on t.content_id=c.content_id
+where c.kids_content='Y' and c.content_type="Movies" and left(t.program_date,7)='2020-06';
+
+CREATE TABLE npv
+(
+  id INT,
+  year INT,
+  npv INT,
+  CONSTRAINT pk_npv PRIMARY KEY(id, year)
+);
+
+CREATE TABLE queries
+(
+  id INT,
+  year INT,
+  CONSTRAINT pk_quereis PRIMARY KEY(id,year)
+);
+
+INSERT INTO npv VALUES(1, 2018, 100);
+INSERT INTO npv VALUES(7, 2020, 30);
+INSERT INTO npv VALUES(13, 2019, 40);
+INSERT INTO npv VALUES(1, 2019, 113);
+INSERT INTO npv VALUES(2, 2008, 121);
+INSERT INTO npv VALUES(3, 2009, 12);
+INSERT INTO npv VALUES(11, 2020, 99);
+INSERT INTO npv VALUES(7, 2019, 0);
+
+INSERT INTO queries VALUES(1, 2019);
+INSERT INTO queries VALUES(2, 2008);
+INSERT INTO queries VALUES(3, 2009);
+INSERT INTO queries VALUES(7, 2018);
+INSERT INTO queries VALUES(7, 2019);
+INSERT INTO queries VALUES(7, 2020);
+INSERT INTO queries VALUES(13, 2019);
+#Q30.Write an SQL query to find the npv of each query of the Queries table.
+Return the result table in any order.
+
+SELECT 
+  q.id,
+  q.year, 
+  ifnull(n.npv,0) as npv
+FROM 
+  queries AS q
+  LEFT JOIN npv AS n ON q.id = n.id AND q.year = n.year;
+  
+#Q31.Write an SQL query to find the npv of each query of the Queries table.
+Return the result table in any order.
+  
+  SELECT 
+  q.id,
+  q.year, 
+  ifnull(n.npv,0) as npv
+FROM 
+  queries AS q
+  LEFT JOIN npv AS n ON q.id = n.id AND q.year = n.year
+;
+
+
+#Q32:Write an SQL query to show the unique ID of each user, If a user does not have a unique ID replace just show null
+CREATE TABLE employees
+(
+  id INT,
+  name VARCHAR(30),
+  CONSTRAINT pk_employees PRIMARY KEY(id)
+);
+
+CREATE TABLE employee_uni
+(
+  id INT,
+  unique_id INT,
+  CONSTRAINT pk_employee_uni PRIMARY KEY(id, unique_id)
+);
+
+
+INSERT INTO employees VALUES(1, 'Alice');
+INSERT INTO employees VALUES(7, 'Bob');
+INSERT INTO employees VALUES(11, 'Meir');
+INSERT INTO employees VALUES(90, 'Winston');
+INSERT INTO employees VALUES(3, 'Jonathan');
+
+INSERT INTO employee_uni VALUES(3, 1);
+INSERT INTO employee_uni VALUES(11, 2);
+INSERT INTO employee_uni VALUES(90, 3);
+
+select u.unique_id,e.name from employees e left join employee_uni u on e.id=u.id order by e.name asc ;
+
+#Q33.Write an SQL query to report the distance travelled by each user.
+#Return the result table ordered by travelled_distance in descending order, if two or more users
+#travelled the same distance, order them by their name in ascending order.
+CREATE TABLE users
+(
+  id INT,
+  name VARCHAR(30),
+  CONSTRAINT pk_users PRIMARY KEY(id)
+);
+
+CREATE TABLE rides
+(
+  id INT,
+  user_id INT,
+  distance INT,
+  CONSTRAINT pk_rides PRIMARY KEY(id)
+);
+INSERT INTO users VALUES(1, 'Alice');
+INSERT INTO users VALUES(2, 'Bob');
+INSERT INTO users VALUES(3, 'Alex');
+INSERT INTO users VALUES(4, 'Donald');
+INSERT INTO users VALUES(7, 'Lee');
+INSERT INTO users VALUES(13, 'Jonathan'); 
+INSERT INTO users VALUES(19, 'Elvis');
+
+INSERT INTO rides VALUES(1, 1, 120);
+INSERT INTO rides VALUES(2, 2, 317);
+INSERT INTO rides VALUES(3, 3, 222);
+INSERT INTO rides VALUES(4, 7, 100);
+INSERT INTO rides VALUES(5, 13, 312);
+INSERT INTO rides VALUES(6, 19, 50);
+INSERT INTO rides VALUES(7, 7, 120);
+INSERT INTO rides VALUES(8, 19, 400);
+INSERT INTO rides VALUES(9, 7, 230);
+
+select * from users;
+select * from rides;
+select u.name,sum(ifnull(distance,0)) as travelled_distance from users u left join rides r on u.id=r.user_id 
+group by u.id order by travelled_distance desc,u.name asc;
+
+
+
 
