@@ -837,3 +837,29 @@ from weather w inner join countries c on w.country_id=c.country_id
 WHERE w.day BETWEEN '2019-11-01' AND '2019-11-30'
 group by w.country_id;
 
+CREATE TABLE units_sold
+(
+  product_id INT,
+  purchase_date DATE,
+  units INT
+);
+
+INSERT INTO prices VALUES(1, '2019-02-17', '2019-02-28', 5);
+INSERT INTO prices VALUES(1, '2019-03-01', '2019-03-22', 20);
+INSERT INTO prices VALUES(2, '2019-02-01', '2019-02-20', 15);
+INSERT INTO prices VALUES(2, '2019-02-21', '2019-03-31', 30);
+
+INSERT INTO units_sold VALUES(1, '2019-02-25', 100);
+INSERT INTO units_sold VALUES(1, '2019-03-01', 15);
+INSERT INTO units_sold VALUES(2, '2019-02-10', 200);
+INSERT INTO units_sold VALUES(2, '2019-03-22', 30);
+select * from prices;
+select * from units_sold;
+
+#Q.23.Write an SQL query to find the average selling price for each product. average_price should be rounded to 2 decimal places.
+
+select p.product_id,round(sum(p.price*u.units)/sum(u.units),2)as avg_price
+from prices p inner join units_sold u on p.product_id=u.product_id
+where u.purchase_date between p.start_date and p.end_date
+group by p.product_id;
+
